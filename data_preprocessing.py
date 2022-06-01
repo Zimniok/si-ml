@@ -1,6 +1,7 @@
 import csv
 import json
 import numpy as np
+from sklearn.preprocessing import OneHotEncoder
 
 GENRES_TO_FILTER = ['Science Fiction', 'Fantasy', 'Mystery', 'Historical novel']
 MY_GENRES = ['Fantasy', 'Mystery', 'Historical novel', 'Horror']
@@ -33,7 +34,7 @@ def filter_genres(data, genres):
     for row in data:
         output_genre = []
         for genre in genres:
-            if row[0].__contains__(genre):
+            if genre in row[0]:
                 output_genre.append(genre)
         if len(output_genre) == 1:
             output.append([''.join(output_genre), row[1]])
@@ -82,4 +83,8 @@ def make_dict(filtered_data):
 
     counts = {k: v for k, v in counts.items() if len(v[0]) < 4}
 
-    print(dict(sorted(counts.items(), key=lambda item: item[1][1])))
+    return dict(sorted(counts.items(), key=lambda item: item[1][1], reverse=True))
+
+# def make_encoder(words_dict):
+#     enc = OneHotEncoder(categories=words)
+#     print(enc.categories_)
