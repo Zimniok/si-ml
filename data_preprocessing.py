@@ -1,7 +1,10 @@
 import csv
 import json
+import re
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.feature_extraction.text import CountVectorizer
+from nltk.corpus import stopwords
+
 
 GENRES_TO_FILTER = ['Science Fiction', 'Fantasy', 'Mystery', 'Historical novel']
 MY_GENRES = ['Fantasy', 'Mystery', 'Historical novel', 'Horror']
@@ -9,11 +12,17 @@ MY_GENRES = ['Fantasy', 'Mystery', 'Historical novel', 'Horror']
 CHARS_TO_REMOVE = '!?.,:;)('
 
 
-def get_data(genres_to_filter):
+def get_data(genres_to_filter, number_of_features, max_df):
     data = read_data()
-    output = filter_genres(data, genres_to_filter)
+    data = filter_genres(data, genres_to_filter)
+    # output = filter_stopwords(output)
     # print(output)
-    return to_x_y(output)
+
+    data = np.array(data)
+    data = np.transpose(data)
+    vectorizer = CountVectorizer(max_features=number_of_features, stop_words='english', max_df=max_df)
+    vectorized = vectorizer.fit_transform(data[1])
+    return vectorized, np.array(data[0]), vectorizer
 
 
 def read_data():
@@ -37,7 +46,21 @@ def filter_genres(data, genres):
             if genre in row[0]:
                 output_genre.append(genre)
         if len(output_genre) == 1:
-            output.append([''.join(output_genre), row[1]])
+            output.append([GENRES_TO_FILTER.index(output_genre[0]), row[1]])
+    return output
+
+
+def filter_stopwords(data):
+    output = []
+    for book in data:
+        stop_words = set(stopwords.words('english'))
+        word_tokens = (w for w in re.split(r"\W", book[1]) if w)
+        filtered_sentence = []
+
+        for w in word_tokens:
+            if w not in stop_words:
+                filtered_sentence.append(w)
+        output.append((book[0], filtered_sentence))
     return output
 
 
@@ -45,8 +68,9 @@ def to_x_y(data):
     x = []
     y = []
     for row in data:
-        # x.append(row[1])
-        y.append(row[0])
+        x.append(row[1])
+        print(row[0])
+        y.append(GENRES_TO_FILTER.index(row[0]))
     return np.array(x), np.array(y)
 
 
@@ -63,27 +87,6 @@ def analyze():
     # Fantasy Mystery Historical novel Horror
 
 
-def make_dict(filtered_data):
-    counts = {}  # word: (genres, books count)
-    for row in filtered_data:
-        dsc = row[1]
-        for char in CHARS_TO_REMOVE:
-            dsc = dsc.replace(char, '')
-        words = dsc.split(' ')
-        for word in words:
-            if word == '':
-                continue
-            word = word.lower()
-            if word in counts:
-                if row[0] not in counts[word][0]:
-                    counts[word][0].append(row[0])
-                counts[word] = counts[word][0], counts[word][1] + 1
-            else:
-                counts[word] = [row[0]], 1
-
-    counts = {k: v for k, v in counts.items() if len(v[0]) < 4}
-
-    return dict(sorted(counts.items(), key=lambda item: item[1][1], reverse=True))
 
 # def make_encoder(words_dict):
 #     enc = OneHotEncoder(categories=words)
