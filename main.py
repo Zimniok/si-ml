@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, accuracy_score
 
 
 if __name__ == '__main__':
@@ -25,6 +25,7 @@ if __name__ == '__main__':
     print('Genre: ' + str(y_test[0]))
 
     predictions = clf.predict(X_test)
+    print('Accuracy: ' + str(accuracy_score(y_test, predictions)))
     cm = confusion_matrix(y_test, predictions)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=data_preprocessing.GENRES_TO_FILTER)
     disp.plot()
