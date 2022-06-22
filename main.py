@@ -1,35 +1,32 @@
 import data_preprocessing
 import numpy as np
+import copy as cp
+import seaborn as sns
+from typing import Tuple
 import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, accuracy_score
-from sklearn.svm import SVC
+
 
 if __name__ == '__main__':
-    x, y, vectorizer = data_preprocessing.get_data(data_preprocessing.GENRES_TO_FILTER, 500, 0.9)
-    print(x)
-    print(vectorizer.get_feature_names_out())
-    print(y)
+    x, y = data_preprocessing.get_data(data_preprocessing.GENRES_TO_FILTER)
 
     # unique, counts = np.unique(y, return_counts=True)
     # print(dict(zip(unique, counts)))
 
-    X_train, X_test, y_train, y_test = train_test_split(x, y, random_state=0)
+    # X_train, X_test, y_train, y_test = train_test_split(x, y, random_state=0)
 
-    clf = MultinomialNB()
+    X_train, X_validate, X_test = np.split(x, [int(0.6 * len(x)), int(0.8 * len(x))])
+    y_train, y_validate, y_test = np.split(y, [int(0.6 * len(x)), int(0.8 * len(x))])
 
-    clf.fit(X_train, y_train)
+    print(X_test[0])
 
-    print('Prediction: ' + str(clf.predict(X_test[0])))
-    print('Genre: ' + str(y_test[0]))
+    feature_selection(x, y)
 
-    predictions = clf.predict(X_test)
-    print('Accuracy: ' + str(accuracy_score(y_test, predictions)))
-    cm = confusion_matrix(y_test, predictions)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=data_preprocessing.GENRES_TO_FILTER)
-    disp.plot()
-    plt.show()
+    # print('Prediction: ' + str(clf.predict(X_test[0])))
+    # print('Genre: ' + str(y_test[0]))
 
     svm = SVC(C=19, kernel='rbf', decision_function_shape='ovo')  # to test C kernel decision_function_shape
     svm.fit(X_train, y_train)
