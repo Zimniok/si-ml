@@ -2,7 +2,8 @@ import csv
 import json
 import re
 import numpy as np
-
+from sklearn.feature_extraction.text import CountVectorizer
+from nltk.corpus import stopwords
 
 
 GENRES_TO_FILTER = ['Science Fiction', 'Fantasy', 'Mystery', 'Historical novel']
@@ -11,7 +12,7 @@ MY_GENRES = ['Fantasy', 'Mystery', 'Historical novel', 'Horror']
 CHARS_TO_REMOVE = '!?.,:;)('
 
 
-def get_data(genres_to_filter):
+def get_data(genres_to_filter, number_of_features, max_df):
     data = read_data()
     data = filter_genres(data, genres_to_filter)
     # output = filter_stopwords(output)
@@ -19,7 +20,9 @@ def get_data(genres_to_filter):
 
     data = np.array(data)
     data = np.transpose(data)
-    return data[1], np.array(data[0])
+    vectorizer = CountVectorizer(max_features=number_of_features, stop_words='english', max_df=max_df)
+    vectorized = vectorizer.fit_transform(data[1])
+    return vectorized, np.array(data[0]), vectorizer
 
 
 def read_data():
