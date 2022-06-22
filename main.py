@@ -2,9 +2,9 @@ import data_preprocessing
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, accuracy_score
-
+from sklearn.svm import SVC
 
 if __name__ == '__main__':
     x, y, vectorizer = data_preprocessing.get_data(data_preprocessing.GENRES_TO_FILTER, 500, 0.9)
@@ -30,6 +30,26 @@ if __name__ == '__main__':
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=data_preprocessing.GENRES_TO_FILTER)
     disp.plot()
     plt.show()
+
+    svm = SVC(C=19, kernel='rbf', decision_function_shape='ovo')  # to test C kernel decision_function_shape
+    svm.fit(X_train, y_train)
+
+    predictions = svm.predict(X_test)
+    print('Accuracy: ' + str(accuracy_score(y_test, predictions)))
+    cm = confusion_matrix(y_test, predictions)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=data_preprocessing.GENRES_TO_FILTER)
+    disp.plot()
+    plt.show()
+
+    test_params = False
+
+    if test_params:
+        svc = SVC()
+        parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
+        clf = GridSearchCV(svc, parameters)
+        clf.fit(X_train, y_train)
+        predictions = clf.predict(X_test)
+        print('Accuracy: ' + str(accuracy_score(y_test, predictions)))
 
     # print('\n ANALYZE \n')
     # print(data_preprocessing.analyze())
